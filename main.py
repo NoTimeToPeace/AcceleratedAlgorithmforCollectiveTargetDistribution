@@ -56,8 +56,22 @@ def algorithm():
     print("\nВектор Nmax:")
     print(Nmax)
 
+    for i in range(0, len(robots)):
+        # Проверяем, необходимо ли распределять цели между роботами
+        if (np.all(D<=0.0001) or np.all(Nmax<=0.0001)):
+            print("\nМатрица D или Nmax содержат все нули")
+            #return
+
+    #print("\nПоиск индекса максимального элемента в 0-ой строке:")
+    #print(np.argmax(D[0]))
+    #print(f"\nПоиск индекса максимального элемента в {np.argmax(D[0])}-м стобце:")
+    #col = D[:, np.argmax(D[0])]
+    #print(np.argmax(col))
+
+
 
 
 if __name__ == '__main__':
+    np.set_printoptions(precision=4, floatmode='fixed')
     algorithm()
 
