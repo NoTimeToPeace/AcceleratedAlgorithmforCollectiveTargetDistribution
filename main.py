@@ -7,10 +7,9 @@ import matplotlib.pyplot as plt
 
 class Target:
     def __init__(self):
-        self.__complexity = random.uniform(1, 100)
+        self.__complexity = random.uniform(1, 10)
         self.__isReady = False
         self.__N_max = random.randint(1, 3)
-        self.__Executors = np.array([], dtype='object')
 
     def changeComplexity(self, performance):
         if self.__complexity > 0:
@@ -23,21 +22,6 @@ class Target:
 
     def getN_max(self):
         return self.__N_max
-
-    def isOverflow(self):
-        if self.__Executors.size < self.__N_max:
-            return False
-        else:
-            return True
-
-    def setExecutor(self, robot):
-        if self.isReady():
-            print("Задача уже выполнена")
-        if not self.isOverflow():
-            self.__Executors = np.append(self.__Executors, robot)
-
-    def getExecutors(self):
-        return self.__Executors
 
     def isReady(self):
         return self.__isReady
@@ -76,6 +60,7 @@ class Robot:
         return self.__target
 
 
+# Обновление матрицы D
 def UpdateMatrixD(D, N_max, robots, targets):
     for i in range(0, len(robots)):
         if robots[i].isFree():
@@ -86,6 +71,14 @@ def UpdateMatrixD(D, N_max, robots, targets):
             D[:, i] = 0
 
 
+# Вывод матрицы D и N_max
+def printMatrix_D_N_max(D, N_max):
+    print("\nМатрица D:")
+    print(D)
+    print("\nВектор N_max:")
+    print(N_max)
+
+
 def algorithm():
     targets = np.array([Target() for i in range(random.randint(1, 15))])  # Создаём цели от 1 до 15
     robots = np.array([Robot(len(targets)) for i in range(random.randint(1, 15))])  # Создаём роботов от 1 до 15
@@ -94,14 +87,10 @@ def algorithm():
                       targets])  # Получаем общий вектор максимально возможного количества роботов, работающих над задачей
 
     print("Количество роботов: " + str(len(robots)) + "\nКоличество целей: " + str(len(targets)))
-    print("\nМатрица D:")
-    print(D)
-    print("\nВектор N_max:")
-    print(N_max)
+    printMatrix_D_N_max(D, N_max)
 
     # Пока все цели не выполнены, пытаемся их выполнить
     while not all([x.isReady() for x in targets]):
-
         # Распределение целей между роботами
         for i in range(0, len(robots)):
             # Проверяем, необходимо ли распределять цели между роботами
@@ -109,19 +98,18 @@ def algorithm():
                 print("\nМатрица D или N_max содержат все нули")
                 break
             else:
-                print("\nРаспределение целей между свободными роботами")
                 if robots[i].isFree():
+                    print("\nРаспределение целей между свободными роботами")
                     col = np.argmax(D[i])
                     row = np.argmax(D[:, col])
                     print("Поиск задания для " + str(i) + " робота")
                     print("Поиск индекса максимального элемента в " + str(i) + "-ой строке: " + str(col))
                     print(f"Поиск индекса максимального элемента в {col}-м стобце: " + str(row))
 
-                    # Если данный робот эффективен для выбранной цели, то закрепляем её за ним
-                    if row == i:
+                    # Если данный робот эффективен для выбранной цели и цель не выполнена, то закрепляем её за ним
+                    if row == i and not targets[col].isReady():
                         robots[i].setTarget(targets[col],
                                             robots[i].getPowerD()[col])  # Указываем роботу цель для выполнения
-                        targets[col].setExecutor(robots[i])  # Устанавливаем исполнителя для задачи
 
                         # Уменьшаем N_max
                         N_max[col] = N_max[col] - 1
@@ -133,10 +121,7 @@ def algorithm():
                         if N_max[col] == 0:
                             D[:, col] = 0
 
-                        print("\nМатрица D:")
-                        print(D)
-                        print("\nВектор N_max:")
-                        print(N_max)
+                        printMatrix_D_N_max(D, N_max)
 
         # Выполнение распределённых задач
         for i in range(0, len(robots)):
@@ -157,7 +142,7 @@ def algorithm():
                     robots[i].resetTarget()
                     UpdateMatrixD(D, N_max, robots, targets)
                     print(f"Обновленная матрица D после освобождения {i}-го робота:")
-                    print(D)
+                    printMatrix_D_N_max(D, N_max)
                     N_max[colUpdate] = N_max[colUpdate] + 1
 
 
