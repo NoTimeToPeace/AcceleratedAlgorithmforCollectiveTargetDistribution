@@ -1,8 +1,5 @@
 import random
-
-import scipy.stats as sps
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 class Target:
@@ -80,9 +77,16 @@ def printMatrix_D_N_max(D, N_max):
     print(N_max)
 
 
+# Определение номера задачи
+def findPositionTarget(targets, robot):
+    for x in range(len(targets)):
+        if targets[x] == robot.getTarget():
+            return x
+
+
 def algorithm():
-    targets = np.array([Target() for i in range(random.randint(1, 5))])  # Создаём цели от 1 до 15
-    robots = np.array([Robot(len(targets)) for i in range(random.randint(1, 5))])  # Создаём роботов от 1 до 15
+    targets = np.array([Target() for i in range(random.randint(1, 15))])  # Создаём цели от 1 до 15
+    robots = np.array([Robot(len(targets)) for i in range(random.randint(1, 15))])  # Создаём роботов от 1 до 15
     D = np.vstack([i.getPowerD() for i in robots])  # Получаем общую матрицу эффективности роботов над задачами
     N_max = np.array([i.getN_max() for i in
                       targets])  # Получаем общий вектор максимально возможного количества роботов, работающих над задачей
@@ -128,22 +132,16 @@ def algorithm():
         for i in range(0, len(robots)):
             if not robots[i].isFree():
                 robots[i].getTarget().changeComplexity(robots[i].getPowerUsed())
-                print("Оставшаяся сложность задачи " + str(robots[i].getTarget()) + ": " +
+                print(f"Оставшаяся сложность {findPositionTarget(targets, robots[i])} задачи: " +
                       str(robots[i].getTarget().getComplexity()))
 
                 # Если задача выполнена, освобождаем робота и обновляем матрицу D и N_max
                 if robots[i].getTarget().isReady():
-                    colUpdate = 0
-                    # Ищем позицию задачи
-                    for x in range(len(targets)):
-                        if targets[x] == robots[i].getTarget():
-                            colUpdate = x
-                            break
-
+                    colUpdate = findPositionTarget(targets, robots[i])
                     robots[i].resetTarget()
                     UpdateMatrixD(D, N_max, robots, targets)
                     N_max[colUpdate] = N_max[colUpdate] + 1
-                    print(f"Обновленная матрица D после освобождения {i}-го робота:")
+                    print(f"\nОбновленная матрица D после освобождения {i}-го робота:")
                     printMatrix_D_N_max(D, N_max)
 
 
