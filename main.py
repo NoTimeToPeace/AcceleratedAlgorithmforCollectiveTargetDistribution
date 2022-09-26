@@ -43,6 +43,7 @@ class Robot:
     def resetTarget(self):
         self.__target = None
         self.__free = True
+        self.__powerUsed = 0
 
     def isFree(self):
         return self.__free
@@ -80,8 +81,8 @@ def printMatrix_D_N_max(D, N_max):
 
 
 def algorithm():
-    targets = np.array([Target() for i in range(random.randint(1, 15))])  # Создаём цели от 1 до 15
-    robots = np.array([Robot(len(targets)) for i in range(random.randint(1, 15))])  # Создаём роботов от 1 до 15
+    targets = np.array([Target() for i in range(random.randint(1, 5))])  # Создаём цели от 1 до 15
+    robots = np.array([Robot(len(targets)) for i in range(random.randint(1, 5))])  # Создаём роботов от 1 до 15
     D = np.vstack([i.getPowerD() for i in robots])  # Получаем общую матрицу эффективности роботов над задачами
     N_max = np.array([i.getN_max() for i in
                       targets])  # Получаем общий вектор максимально возможного количества роботов, работающих над задачей
@@ -141,9 +142,9 @@ def algorithm():
 
                     robots[i].resetTarget()
                     UpdateMatrixD(D, N_max, robots, targets)
+                    N_max[colUpdate] = N_max[colUpdate] + 1
                     print(f"Обновленная матрица D после освобождения {i}-го робота:")
                     printMatrix_D_N_max(D, N_max)
-                    N_max[colUpdate] = N_max[colUpdate] + 1
 
 
 if __name__ == '__main__':
